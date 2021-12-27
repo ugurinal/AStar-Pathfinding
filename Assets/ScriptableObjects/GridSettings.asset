@@ -16,4 +16,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   gridWorldSize: {x: 50, y: 50}
-  nodeRadius: 0.5
+  nodeRadius: 1
+  drawPath: 1
+  drawGrid: 1
+  pathColor: {r: 0.08962262, g: 0.89019483, b: 1, a: 1}
+  walkableCellColor: {r: 0.32489195, g: 1, b: 0.2971698, a: 1}
+  unwalkableCellColor: {r: 1, g: 0, b: 0, a: 1}

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AStarPathfinding
@@ -11,6 +12,8 @@ namespace AStarPathfinding
         private float nodeDiameter;
         private int gridSizeX;
         private int gridSizeY;
+
+        public int GridSize => gridSizeX * gridSizeY;
 
         private void Start()
         {
@@ -35,12 +38,12 @@ namespace AStarPathfinding
                     Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + settings.nodeRadius) +
                                          Vector3.forward * (y * nodeDiameter + settings.nodeRadius);
                     bool walkable = !Physics.CheckSphere(worldPoint, settings.nodeRadius, settings.unwalkableLayerMask);
-                    grid[x, y] = new Node(walkable, worldPoint);
+                    grid[x, y] = new Node(walkable, worldPoint, x, y);
                 }
             }
         }
 
-        public Node NodeFromWorldPoint(Vector3 worldPosition)
+        public Node GetNodeFromWorldPoint(Vector3 worldPosition)
         {
             float percentX = (worldPosition.x + settings.gridWorldSize.x / 2) / settings.gridWorldSize.x;
             float percentY = (worldPosition.z + settings.gridWorldSize.y / 2) / settings.gridWorldSize.y;
@@ -54,20 +57,67 @@ namespace AStarPathfinding
             return grid[x, y];
         }
 
+        public List<Node> GetNeighbours(Node node)
+        {
+            List<Node> neighbours = new List<Node>();
+
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    if (x == 0 & y == 0)
+                    {
+                        continue;
+                    }
+
+                    int checkX = node.GridX + x;
+                    int checkY = node.GridY + y;
+
+                    if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                    {
+                        neighbours.Add(grid[checkX, checkY]);
+                    }
+                }
+            }
+
+            return neighbours;
+        }
+
+        public List<Node> Path { get; set; }
+
         private void OnDrawGizmos()
         {
             Gizmos.DrawWireCube(transform.position, new Vector3(settings.gridWorldSize.x, 1, settings.gridWorldSize.y));
 
             if (grid != null)
             {
-                foreach (var node in grid)
+                if (settings.drawPath)
                 {
-                    Color green = new Color(0, 255, 0, .25f);
-                    Color red = new Color(255, 0, 0, .25f);
-                    Gizmos.color = node.Walkable ? green : red;
-                    Gizmos.DrawCube(node.WorldPosition, Vector3.one * (nodeDiameter - 0.1f));
+                    if (Path != null)
+                    {
+                        foreach (var node in Path)
+                        {
+                            Gizmos.color = settings.pathColor;
+                            Gizmos.DrawCube(node.WorldPosition, Vector3.one * (nodeDiameter - 0.1f));
+                        }
+                    }
+                }
+
+                if (settings.drawGrid)
+                {
+                    foreach (var node in grid)
+                    {
+                        if (Path != null && Path.Contains(node))
+                        {
+                            continue;
+                        }
+
+                        Gizmos.color = node.Walkable ? settings.walkableCellColor : settings.unwalkableCellColor;
+
+                        Gizmos.DrawCube(node.WorldPosition, Vector3.one * (nodeDiameter - 0.1f));
+                    }
                 }
             }
         }
-    }
-}
+    } // grid 
+} //namespace
